@@ -1,3 +1,4 @@
+from email.policy import default
 from rest_framework import serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,6 +21,7 @@ class UserInitApi(PublicApiMixin, ApiErrorsMixin, APIView):
         email = serializers.EmailField()
         first_name = serializers.CharField(required=False, default='')
         last_name = serializers.CharField(required=False, default='')
+        social = serializers.CharField(required=False, default='')
 
     def post(self, request, *args, **kwargs):
         id_token = request.headers.get('Authorization')

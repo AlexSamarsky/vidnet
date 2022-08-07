@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
+import { Button, Form } from "react-bootstrap";
+import GoogleButton from "react-google-button";
 import { useLoginMutation } from "../../app/api/authApiSlice";
-import { setCredentials, selectUser, setUser } from "../../app/authSlice";
+import { setCredentials, selectUser } from "../../app/authSlice";
 
 import styles from "./login.module.css";
+import { utilOpenGoogleLoginPage } from "../../utils/authUtils";
 
 function Login() {
   const [email, setEmail] = useState<string>("xsami@yandex.ru");
@@ -32,8 +35,6 @@ function Login() {
           token: userData.access,
         })
       );
-      console.log(userData);
-      console.log(user);
       navigate("/");
     } catch (err: any) {
       if (!err?.status) {
@@ -46,10 +47,12 @@ function Login() {
       } else {
         setErrMsg("Login Failed");
       }
-      console.log(err);
-      console.log(errMsg);
     }
   };
+
+  const openGoogleLoginPage = useCallback(() => {
+    utilOpenGoogleLoginPage();
+  }, []);
 
   const handleSetUser = (e: React.ChangeEvent<HTMLInputElement>) =>
     setEmail(e.target.value);
@@ -87,6 +90,11 @@ function Login() {
           >
             Войти
           </Button>
+          <GoogleButton
+            onClick={openGoogleLoginPage}
+            label="Login by Google"
+            className="mt-3 mx-auto"
+          />
         </Form>
       </div>
     </>

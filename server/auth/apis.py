@@ -1,4 +1,4 @@
-from urllib.parse import urlencode
+# from urllib.parse import urlencode
 
 from rest_framework import status, serializers
 from rest_framework.views import APIView
@@ -9,8 +9,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.urls import reverse
+
 from django.conf import settings
 from django.shortcuts import redirect
+from django.utils.http import urlencode
 
 from api.mixins import ApiErrorsMixin, PublicApiMixin, ApiAuthMixin
 
@@ -20,6 +22,13 @@ from auth.services import jwt_login, google_get_access_token, google_get_user_in
 
 from .compat import set_cookie_with_token
 from .serializers import VidnetObtainPairSerializer
+
+from auth.services import jwt_login, google_validate_id_token
+
+from users.services import user_get_or_create
+from users.selectors import user_get_me
+
+from django.core.management.utils import get_random_secret_key
 
 
 class LoginApi(ApiErrorsMixin, TokenObtainPairView):
@@ -38,12 +47,37 @@ class LoginApi(ApiErrorsMixin, TokenObtainPairView):
 
         response = super().post(request, *args, **kwargs)
 
-        set_cookie_with_token(response, "vidnet_refresh", refresh_token)
+        set_cookie_with_token(
+            response, settings.AUTH_REFRESH_TOKEN_COOKIE_NAME, refresh_token)
 
         return response
 
 
-class GoogleLoginApi(PublicApiMixin, ApiErrorsMixin, APIView):
+class GoogleLoginApi2(ApiErrorsMixin, TokenObtainPairView):
+    permission_classes = (AllowAny,)
+    serializer_class = VidnetObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        # Reference: https://github.com/Styria-Digital/django-rest-framework-jwt/blob/master/src/rest_framework_jwt/views.py#L44
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        refresh_token = serializer.validated_data.get('refresh')
+
+        user = serializer.user  # or request.user
+        user_record_login(user=user)
+
+        response = super().post(request, *args, **kwargs)
+
+        set_cookie_with_token(
+            response, settings.AUTH_REFRESH_TOKEN_COOKIE_NAME, refresh_token)
+
+        return response
+
+
+class GoogleLoginApi(PublicApiMixin, ApiErrorsMixin, TokenObtainPairView):
+    serializer_class = VidnetObtainPairSerializer
+
     class InputSerializer(serializers.Serializer):
         code = serializers.CharField(required=False)
         error = serializers.CharField(required=False)
@@ -74,16 +108,40 @@ class GoogleLoginApi(PublicApiMixin, ApiErrorsMixin, APIView):
 
         profile_data = {
             'email': user_data['email'],
-            'first_name': user_data.get('givenName', ''),
-            'last_name': user_data.get('familyName', ''),
+            'first_name': user_data.get('given_name', ''),
+            'last_name': user_data.get('family_name', ''),
+            'password': code,
+            'social': 'google'
         }
 
-        # We use get-or-create logic here for the sake of the example.
-        # We don't have a sign-up flow.
-        user, _ = user_get_or_create(**profile_data)
+        # serializer = self.get_serializer(data=request.data)
+        serializer = VidnetObtainPairSerializer(data=profile_data)
 
-        response = redirect(settings.BASE_FRONTEND_URL)
-        response = jwt_login(response=response, user=user)
+        serializer.is_valid(raise_exception=True)
+        refresh_token = serializer.validated_data.get('refresh')
+
+        user = serializer.user  # or request.user
+        user_record_login(user=user)
+
+        refresh = serializer.get_token(user)
+        data = {}
+        data["refresh"] = str(refresh)
+        data["access"] = str(refresh.access_token)
+        data['username'] = user.first_name
+        response = Response(data, status=status.HTTP_200_OK)
+
+        set_cookie_with_token(
+            response, settings.AUTH_REFRESH_TOKEN_COOKIE_NAME, data["refresh"])
+
+        # # We use get-or-create logic here for the sake of the example.
+        # # We don't have a sign-up flow.
+        # user, _ = user_get_or_create(**profile_data)
+
+        url_redirect = f"{settings.BASE_FRONTEND_URL}?{urlencode(data)}"
+        response = redirect(url_redirect)
+        set_cookie_with_token(
+            response, settings.AUTH_REFRESH_TOKEN_COOKIE_NAME, refresh_token)
+        # response = jwt_login(response=response, user=user)
 
         return response
 
@@ -96,6 +154,30 @@ class LogoutApi(ApiAuthMixin, ApiErrorsMixin, APIView):
         user_change_secret_key(user=request.user)
 
         response = Response(status=status.HTTP_202_ACCEPTED)
-        response.delete_cookie(settings.JWT_AUTH['JWT_AUTH_COOKIE'])
+        response.delete_cookie(settings.AUTH_REFRESH_TOKEN_COOKIE_NAME)
+
+        return response
+
+
+class UserInitApi(PublicApiMixin, ApiErrorsMixin, APIView):
+    class InputSerializer(serializers.Serializer):
+        email = serializers.EmailField()
+        first_name = serializers.CharField(required=False, default='')
+        last_name = serializers.CharField(required=False, default='')
+        social = serializers.CharField(required=False, default='')
+
+    def post(self, request, *args, **kwargs):
+        id_token = request.headers.get('Authorization')
+        google_validate_id_token(id_token=id_token)
+
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # We use get-or-create logic here for the sake of the example.
+        # We don't have a sign-up flow.
+        user, _ = user_get_or_create(**serializer.validated_data)
+
+        response = Response(data=user_get_me(user=user))
+        response = jwt_login(response=response, user=user)
 
         return response

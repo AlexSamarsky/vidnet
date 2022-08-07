@@ -3,8 +3,9 @@
 # from utils import (
 #     unix_epoch,
 # )
+from email.policy import default
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
+from rest_framework import serializers
 
 # class TokenUserSerializer(serializers.Serializer):
 
@@ -42,6 +43,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class VidnetObtainPairSerializer(TokenObtainPairSerializer):
 
+    social = serializers.CharField(required=False, default='')
+    first_name = serializers.CharField(
+        required=False, default='', allow_blank=True)
+    last_name = serializers.CharField(
+        required=False, default='', allow_blank=True)
+    context = {}
+
     @classmethod
     def get_token(cls, user):
         token = super(VidnetObtainPairSerializer, cls).get_token(user)
@@ -50,6 +58,10 @@ class VidnetObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        self.context = {'request': {'social': attrs['social'],
+                                    'first_name': attrs['first_name'],
+                                    'last_name': attrs['last_name'],
+                                    }}
         data = super().validate(attrs)
         data['username'] = self.user.first_name
 

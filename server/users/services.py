@@ -23,7 +23,7 @@ def user_create(email, password=None, **extra_fields) -> User:
         user.set_password(password)
     else:
         user.set_unusable_password()
-
+    user.last_login = get_now()
     user.full_clean()
     user.save()
 

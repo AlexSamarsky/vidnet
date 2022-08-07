@@ -13,6 +13,7 @@ class User(AbstractUser):
         max_length=255, default=get_random_secret_key)
 
     last_login = models.DateTimeField(null=True)
+    social = models.CharField(max_length=40, blank=True)
 
     USERNAME_FIELD: str = 'email'
     REQUIRED_FIELDS: List[str] = []

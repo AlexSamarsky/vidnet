@@ -11,6 +11,12 @@ export interface UserCredentials {
   password: string;
 }
 
+export interface UserCheck {
+  id: number;
+  name: string;
+  email: string;
+}
+
 const authSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<UserData, UserCredentials>({
@@ -20,7 +26,12 @@ const authSlice = apiSlice.injectEndpoints({
         body: { ...credentials },
       }),
     }),
+    check: builder.query<UserCheck, void>({
+      query: () => ({
+        url: "users/me/",
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation } = authSlice;
+export const { useLoginMutation, useCheckQuery, useLazyCheckQuery } = authSlice;

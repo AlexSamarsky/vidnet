@@ -1,20 +1,18 @@
 import React, { useEffect } from "react";
 import { Navbar, Container, Nav } from "react-bootstrap";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout, selectUser } from "../../app/authSlice";
 import { useAppDispatch } from "../../app/hooks";
 
 export const AppNavBar = () => {
   const dispatch = useAppDispatch();
-
+  const navigate = useNavigate();
   const user = useSelector(selectUser);
 
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
   const handleLogout = () => {
     dispatch(logout());
+    navigate("/");
   };
   return (
     <Navbar bg="light" expand="lg" className="mx-auto">
