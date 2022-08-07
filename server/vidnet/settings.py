@@ -47,7 +47,10 @@ CORS_ORIGIN_WHITELIST = env.list(
     default=[BASE_FRONTEND_URL]
 )
 
-
+CORS_ALLOWED_ORIGINS = env.list(
+    'DJANGO_CORS_ORIGIN_WHITELIST',
+    default=[BASE_FRONTEND_URL]
+)
 # Application definition
 
 INSTALLED_APPS = [
@@ -63,15 +66,14 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
-
-    'rest_framework_jwt',
-    'rest_framework_jwt.blacklist',
+    'rest_framework_simplejwt',
     'users',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -157,19 +159,43 @@ PRODUCTION_SETTINGS = env.bool('DJANGO_PRODUCTION_SETTINGS', default=False)
 
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-JWT_EXPIRATION_DELTA_DEFAULT = 2.628e+6  # 1 month in seconds
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': timedelta(
-        seconds=env.int(
-            'DJANGO_JWT_EXPIRATION_DELTA',
-            default=JWT_EXPIRATION_DELTA_DEFAULT
-        )
-    ),
-    'JWT_AUTH_HEADER_PREFIX': 'JWT',
-    'JWT_GET_USER_SECRET_KEY': lambda user: user.secret_key,
-    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.selectors.jwt_response_payload_handler',
-    'JWT_AUTH_COOKIE': 'jwt_token',
-    'JWT_AUTH_COOKIE_SAMESITE': 'None'
+# JWT_EXPIRATION_DELTA_DEFAULT = 2.628e+6  # 1 month in seconds
+# JWT_AUTH = {
+#     'JWT_EXPIRATION_DELTA': timedelta(
+#         seconds=env.int(
+#             'DJANGO_JWT_EXPIRATION_DELTA',
+#             default=JWT_EXPIRATION_DELTA_DEFAULT
+#         )
+#     ),
+#     'JWT_AUTH_HEADER_PREFIX': 'JWT',
+#     'JWT_GET_USER_SECRET_KEY': lambda user: user.secret_key,
+#     'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.selectors.jwt_response_payload_handler',
+#     'JWT_AUTH_COOKIE': 'jwt_token',
+#     'JWT_AUTH_COOKIE_SAMESITE': 'None'
+# }
+
+SIMPLE_JWT = {
+    # Cookie name. Enables cookies if value is set.
+    'AUTH_COOKIE': 'access_token',
+    # A string like "example.com", or None for standard domain cookie.
+    'AUTH_COOKIE_DOMAIN': None,
+    # Whether the auth cookies should be secure (https:// only).
+    'AUTH_COOKIE_SECURE': False,
+    # Http only cookie flag.It's not fetch by javascript.
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+    # Whether to set the flag restricting cookie leaks on cross-site requests.
+    'AUTH_COOKIE_SAMESITE': 'Lax',
+    # This can be 'Lax', 'Strict', or None to disable the flag.
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 
 

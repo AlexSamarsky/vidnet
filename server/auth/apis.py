@@ -3,7 +3,10 @@ from urllib.parse import urlencode
 from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_jwt.views import ObtainJSONWebTokenView
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny
+
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.urls import reverse
 from django.conf import settings
@@ -15,18 +18,29 @@ from users.services import user_record_login, user_change_secret_key, user_get_o
 
 from auth.services import jwt_login, google_get_access_token, google_get_user_info
 
+from .compat import set_cookie_with_token
+from .serializers import VidnetObtainPairSerializer
 
-class LoginApi(ApiErrorsMixin, ObtainJSONWebTokenView):
+
+class LoginApi(ApiErrorsMixin, TokenObtainPairView):
+    permission_classes = (AllowAny,)
+    serializer_class = VidnetObtainPairSerializer
+
     def post(self, request, *args, **kwargs):
         # Reference: https://github.com/Styria-Digital/django-rest-framework-jwt/blob/master/src/rest_framework_jwt/views.py#L44
         serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
+        refresh_token = serializer.validated_data.get('refresh')
 
-        user = serializer.object.get('user') or request.user
+        user = serializer.user  # or request.user
         user_record_login(user=user)
 
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        set_cookie_with_token(response, "vidnet_refresh", refresh_token)
+
+        return response
 
 
 class GoogleLoginApi(PublicApiMixin, ApiErrorsMixin, APIView):

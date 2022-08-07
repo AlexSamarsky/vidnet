@@ -5,8 +5,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 
-from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.compat import set_cookie_with_token
+from rest_framework_simplejwt.settings import api_settings
 
 from users.models import User
 from users.services import user_record_login
@@ -24,9 +23,9 @@ def jwt_login(*, response: HttpResponse, user: User) -> HttpResponse:
     payload = jwt_payload_handler(user)
     token = jwt_encode_handler(payload)
 
-    if api_settings.JWT_AUTH_COOKIE:
-        # Reference: https://github.com/Styria-Digital/django-rest-framework-jwt/blob/master/src/rest_framework_jwt/compat.py#L43
-        set_cookie_with_token(response, api_settings.JWT_AUTH_COOKIE, token)
+    # if api_settings.JWT_AUTH_COOKIE:
+    #     # Reference: https://github.com/Styria-Digital/django-rest-framework-jwt/blob/master/src/rest_framework_jwt/compat.py#L43
+    #     set_cookie_with_token(response, api_settings.JWT_AUTH_COOKIE, token)
 
     user_record_login(user=user)
 
@@ -59,6 +58,8 @@ def google_get_access_token(*, code: str, redirect_uri: str) -> str:
         'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
         'redirect_uri': redirect_uri,
         'grant_type': 'authorization_code',
+        'access_type': 'offline',
+        'prompt': 'consent'
     }
 
     response = requests.post(GOOGLE_ACCESS_TOKEN_OBTAIN_URL, data=data)
