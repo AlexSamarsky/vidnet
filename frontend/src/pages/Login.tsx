@@ -4,51 +4,47 @@ import { useNavigate } from "react-router-dom";
 
 import { Button, Form } from "react-bootstrap";
 import GoogleButton from "react-google-button";
-import { useLoginMutation } from "../../app/api/authApiSlice";
-import { setCredentials, selectUser } from "../../app/authSlice";
+import { useLoginMutation } from "../app/api/authApiSlice";
+import { setCredentials, selectUser } from "../app/authSlice";
 
+import { utilOpenGoogleLoginPage } from "../utils/authUtils";
 import styles from "./login.module.css";
-import { utilOpenGoogleLoginPage } from "../../utils/authUtils";
 
 function Login() {
-  const [email, setEmail] = useState<string>("xsami@yandex.ru");
-  const [password, setPassword] = useState<string>("123");
-  const [errMsg, setErrMsg] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const user = useSelector(selectUser);
+  const [login, { isLoading, error, isError, data: userData }] =
+    useLoginMutation();
 
-  const [login, { isLoading }] = useLoginMutation();
-  useEffect(() => {
-    setErrMsg("");
-  }, [email, password]);
-
-  const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const userData = await login({ email, password }).unwrap();
-      dispatch(
-        setCredentials({
-          username: userData.username,
-          isLogged: true,
-          token: userData.access,
-        })
-      );
-      navigate("/");
-    } catch (err: any) {
-      if (!err?.status) {
-        // isLoading: true until timeout occurs
-        setErrMsg("No Server Response");
-      } else if (err.status === 400) {
-        setErrMsg("Missing Username or Password");
-      } else if (err.status === 401) {
-        setErrMsg("Unauthorized");
-      } else {
-        setErrMsg("Login Failed");
-      }
-    }
+      login({ email, password })
+        .unwrap()
+        .catch((err) => console.log(err));
+    } catch (err: any) {}
   };
+
+  useEffect(() => {
+    try {
+      if (error) {
+        console.log(error);
+      }
+      if (userData?.username) {
+        dispatch(
+          setCredentials({
+            username: userData?.username!,
+            isLogged: true,
+            token: userData?.access!,
+          })
+        );
+        navigate("/");
+      }
+    } catch (err: any) {}
+  }, [error, userData]);
 
   const openGoogleLoginPage = useCallback(() => {
     utilOpenGoogleLoginPage();
@@ -81,15 +77,26 @@ function Login() {
               onChange={handleSetPwd}
               defaultValue={password}
             />
+            {isLoading ? <p>Загрузка</p> : <></>}
+            {isError ? (
+              <>
+                <p>{JSON.stringify(error)}</p>
+              </>
+            ) : (
+              <></>
+            )}
+            {error ? <p>{JSON.stringify(error)}</p> : <></>}
           </Form.Group>
-          <Button
-            type="submit"
-            className="primary"
-            defaultChecked
-            disabled={isLoading}
-          >
-            Войти
-          </Button>
+          <div className="row">
+            <Button
+              type="submit"
+              className="primary"
+              defaultChecked
+              disabled={isLoading}
+            >
+              Войти
+            </Button>
+          </div>
           <GoogleButton
             onClick={openGoogleLoginPage}
             label="Login by Google"

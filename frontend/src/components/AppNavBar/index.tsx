@@ -33,6 +33,9 @@ export const AppNavBar = () => {
                 <Nav.Link as={Link} to="/login">
                   Войти
                 </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Зарегистрироваться
+                </Nav.Link>
               </>
             ) : (
               <>

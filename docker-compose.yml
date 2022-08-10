@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    container_name: vidnet_pg
+    restart: always
+    environment:
+      - POSTGRES_DB=vidnet
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - ./data:/var/lib/postgresql/data

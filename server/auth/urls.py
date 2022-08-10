@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from auth.apis import LoginApi, GoogleLoginApi, LogoutApi
+from auth.apis import LoginApi, GoogleLoginApi, LogoutApi, SignInApi
 
 login_patterns = [
     path('', LoginApi.as_view(), name='login'),
@@ -10,4 +10,5 @@ login_patterns = [
 urlpatterns = [
     path('login/', include(login_patterns)),
     path('logout/', LogoutApi.as_view(), name='logout'),
+    path('register/', SignInApi.as_view(), name='register')
 ]

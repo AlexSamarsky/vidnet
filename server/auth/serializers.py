@@ -3,42 +3,14 @@
 # from utils import (
 #     unix_epoch,
 # )
-from email.policy import default
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 
-# class TokenUserSerializer(serializers.Serializer):
+from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth.models import BaseUserManager
 
-#     password = serializers.CharField(
-#         write_only=True, required=True, style={'input_type': 'password'})
-#     token = serializers.CharField(read_only=True)
 
-#     def __init__(self, *args, **kwargs):
-#         super(TokenUserSerializer, self).__init__(*args, **kwargs)
-
-#         self.fields[self.username_field
-#                     ] = serializers.CharField(write_only=True, required=True)
-
-#     @property
-#     def username_field(self):
-#         return get_user_model().USERNAME_FIELD
-
-#     def validate(self, data):
-#         credentials = {
-#             self.username_field: data.get(self.username_field),
-#             'password': data.get('password')
-#         }
-#         user = authenticate(self.context['request'], **credentials)
-
-#         if not user:
-#             msg = 'Unable to log in with provided credentials.'
-#             raise serializers.ValidationError(msg)
-
-#         return {
-#             'token': '',
-#             'user': user,
-#             # 'issued_at': payload.get('iat', unix_epoch())
-#         }
+User = get_user_model()
 
 
 class VidnetObtainPairSerializer(TokenObtainPairSerializer):
@@ -66,3 +38,23 @@ class VidnetObtainPairSerializer(TokenObtainPairSerializer):
         data['username'] = self.user.first_name
 
         return data
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    """
+    A user serializer for registering the user
+    """
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'password', 'first_name', 'last_name')
+
+    def validate_email(self, value):
+        user = User.objects.filter(email=value)
+        if user:
+            raise serializers.ValidationError("Email is already taken")
+        return BaseUserManager.normalize_email(value)
+
+    def validate_password(self, value):
+        password_validation.validate_password(value)
+        return value

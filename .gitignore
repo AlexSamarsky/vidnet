@@ -187,3 +187,7 @@ frontend/node_modules/.bin/tailwindcss
 
 
 .vscode
+
+data/*
+
+server/users/migrations/*

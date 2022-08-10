@@ -11,6 +11,11 @@ export interface UserCredentials {
   password: string;
 }
 
+export interface UserRegister extends UserCredentials {
+  first_name: string;
+  last_name: string;
+}
+
 export interface UserCheck {
   id: number;
   name: string;
@@ -26,6 +31,13 @@ const authSlice = apiSlice.injectEndpoints({
         body: { ...credentials },
       }),
     }),
+    register: builder.mutation<any, UserRegister>({
+      query: (credentials) => ({
+        url: "auth/register/",
+        method: "POST",
+        body: { ...credentials },
+      }),
+    }),
     check: builder.query<UserCheck, void>({
       query: () => ({
         url: "users/me/",
@@ -34,4 +46,9 @@ const authSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useCheckQuery, useLazyCheckQuery } = authSlice;
+export const {
+  useLoginMutation,
+  useCheckQuery,
+  useLazyCheckQuery,
+  useRegisterMutation,
+} = authSlice;

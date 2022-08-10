@@ -1,11 +1,10 @@
-from email.policy import default
 from rest_framework import serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from api.mixins import ApiErrorsMixin, ApiAuthMixin, PublicApiMixin
 
-from auth.services import jwt_login, google_validate_id_token
+from auth.services import google_validate_id_token
 
 from users.services import user_get_or_create
 from users.selectors import user_get_me
@@ -35,6 +34,6 @@ class UserInitApi(PublicApiMixin, ApiErrorsMixin, APIView):
         user, _ = user_get_or_create(**serializer.validated_data)
 
         response = Response(data=user_get_me(user=user))
-        response = jwt_login(response=response, user=user)
+        # response = jwt_login(response=response, user=user)
 
         return response

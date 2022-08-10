@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Button, Card, Container } from "react-bootstrap";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { selectToken, setCredentials } from "../../app/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useCheckQuery, useLazyCheckQuery } from "../../app/api/authApiSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { selectToken, setCredentials } from "../app/authSlice";
+import { useCheckQuery, useLazyCheckQuery } from "../app/api/authApiSlice";
 
 function Home() {
   const navigate = useNavigate();

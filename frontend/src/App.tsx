@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
-import { Home, Login } from "./pages";
+import { Home, Login, Register } from "./pages";
 import Missing from "./pages/Missing";
 import { AppNavBar } from "./components/AppNavBar";
 function App() {
@@ -12,6 +12,7 @@ function App() {
           <Route path="" element={<Home />} />
           <Route path="home" element={<Home />} />
           <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
           <Route path="*" element={<Missing />} />
         </Route>
       </Routes>
