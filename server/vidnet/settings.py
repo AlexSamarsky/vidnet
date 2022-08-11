@@ -38,7 +38,7 @@ BASE_FRONTEND_URL = env.str(
     'DJANGO_BASE_FRONTEND_URL', default='http://localhost:3000')
 
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[
-                         'localhost', '.herokuapp.com'])
+                         'localhost', '127.0.0.1'])
 
 
 CORS_ALLOW_CREDENTIALS = True
@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'users',
+    'videoclips',
 ]
 
 MIDDLEWARE = [

@@ -27,3 +27,6 @@ class User(AbstractUser):
             return self.first_name.capitalize()
 
         return f'{self.first_name.capitalize()} {self.last_name.capitalize()}'
+
+    def __str__(self) -> str:
+        return f"{self.name}"
