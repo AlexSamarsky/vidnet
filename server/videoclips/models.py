@@ -1,4 +1,7 @@
+# from datetime import datetime
 from django.db import models
+
+from django.utils import timezone
 
 from users.models import User
 
@@ -42,7 +45,8 @@ class Videoclip(models.Model):
     upload = models.FileField(upload_to=user_directory_path, blank=True)
     categories = models.ManyToManyField(
         Category, through="VCCategory", verbose_name="Категории")
-    create_date = models.DateTimeField(verbose_name="Дата создания")
+    create_date = models.DateTimeField(
+        verbose_name="Дата создания", default=timezone.now)
 
     def __str__(self) -> str:
         return f"{self.title}, Автор: {self.author}"
@@ -53,7 +57,8 @@ class VCComment(models.Model):
         Videoclip, on_delete=models.CASCADE, verbose_name="Видео")
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="Пользователь")
-    create_date = models.DateTimeField(verbose_name="Дата")
+    create_date = models.DateTimeField(
+        verbose_name="Дата", default=timezone.now)
     comment = models.TextField(verbose_name="Комментарий")
 
     def __str__(self) -> str:

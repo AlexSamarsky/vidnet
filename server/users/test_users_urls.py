@@ -32,7 +32,7 @@ class AuthorizedMethodTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["email"], self.user_data['email'])
         self.assertNotEqual(response.data["email"], '123')
-        print(response.data)
+        # print(response.data)
 
     def test_me_not_authorised(self):
         self.client.credentials(
