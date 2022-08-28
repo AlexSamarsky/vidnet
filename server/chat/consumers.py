@@ -37,12 +37,26 @@ class RoomConsumer(ObserverModelInstanceMixin, GenericAsyncAPIConsumer):
         self.room_subscribe = room.id
         self.room_user_id = self.scope["user"].id
         await self.message_activity.subscribe(room=room.id)
-        await self.notify_users()
+        # await self.notify_users()
+        return obj, 200
+
+    @action()
+    async def join_public_room(self, room_pk, user_pk, **kwargs):
+        obj = {
+            'scope_user_pk': self.scope["user"].id
+        }
+        room: Room = await self.get_private_room(user_pk)
+        obj['room'] = room.id
+
+        self.room_subscribe = room.id
+        self.room_user_id = self.scope["user"].id
+        await self.message_activity.subscribe(room=room.id)
+        # await self.notify_users()
         return obj, 200
 
     @action()
     async def create_message(self, message, **kwargs):
-        room: Room = await self.get_room(pk=self.room_subscribe)
+        room: Room = await self.get_room(room_pk=self.room_subscribe)
         await database_sync_to_async(Message.objects.create)(
             room=room,
             user=self.scope["user"],
@@ -50,10 +64,39 @@ class RoomConsumer(ObserverModelInstanceMixin, GenericAsyncAPIConsumer):
         )
         # await self.apply_unread_message(message_obj)
 
-    # @action()
-    # async def subscribe_to_messages_in_room(self, room_pk, **kwargs):
-    #     self.room_subscribe = room_pk
-    #     await self.message_activity.subscribe(room=room_pk)
+    @action()
+    async def action_add_user_to_room(self, room_pk, user_pk, **kwargs):
+        try:
+            room = await self.add_user_to_room(room_pk, user_pk)
+            return room, 200
+        except (Room.DoesNotExist, User.DoesNotExist) as error:
+            return {"error": error}, 404
+
+    @action()
+    async def action_remove_user_from_room(self, room_pk, user_pk, **kwargs):
+        try:
+            room = await self.remove_user_from_room(room_pk, user_pk)
+            return room, 200
+        except (Room.DoesNotExist, User.DoesNotExist) as error:
+            return {"error": error}, 404
+
+    @action()
+    async def action_create_public_room(self, name, **kwargs):
+        room = await self.create_room_for_user(name)
+
+        return room, 200
+
+    @action()
+    async def subscribe_to_messages_in_room(self, room_pk, **kwargs):
+        room = await self.get_room(room_pk=room_pk, user_pk=self.scope['user'].id)
+        if not room:
+            return {"error": "illegible room"}, 404
+
+        self.room_subscribe = room_pk
+        self.room_user_id = self.scope["user"].id
+        await self.message_activity.subscribe(room=room_pk)
+
+        return {"success": "ok"}, 200
 
     @model_observer(Message)
     async def message_activity(self, message, observer=None, **kwargs):
@@ -76,7 +119,7 @@ class RoomConsumer(ObserverModelInstanceMixin, GenericAsyncAPIConsumer):
         return dict(data=MessageSerializer(instance).data, action=action.value, pk=instance.pk)
 
     async def notify_users(self):
-        room: Room = await self.get_room(self.room_subscribe)
+        room: Room = await self.get_room(pk_room=self.room_subscribe)
         if self.groups:
             for group in self.groups:
                 await self.channel_layer.group_send(
@@ -91,23 +134,53 @@ class RoomConsumer(ObserverModelInstanceMixin, GenericAsyncAPIConsumer):
         await self.send(text_data=json.dumps({'usuarios': event["usuarios"]}))
 
     @database_sync_to_async
-    def get_room(self, pk: int) -> Room:
-        return Room.objects.get(pk=pk)
+    def get_room(self, room_pk: int, user_pk: int = None) -> Room:
+        room = Room.objects.get(id=room_pk)
+        if user_pk:
+            if not room.current_users.filter(id=user_pk).exists():
+                return None
+
+        return room
+
+    @database_sync_to_async
+    def create_room_for_user(self, name) -> Room:
+        room = Room.objects.create(name=name, room_type="PB")
+        room.current_users.add(User.objects.get(id=self.scope["user"].id))
+        room.save()
+
+        return RoomSerializer(room).data
+
+    # @database_sync_to_async
+    # def get_public_room(self, pk: int) -> Room:
+    #     return Room.objects.get(pk=pk)
 
     @database_sync_to_async
     def current_users(self, room: Room):
         return [UserSerializer(user).data for user in room.current_users.all()]
 
-    # @database_sync_to_async
-    # def remove_user_from_room(self, room):
-    #     user: User = self.scope["user"]
-    #     user.current_rooms.remove(room)
+    @database_sync_to_async
+    def remove_user_from_room(self, room_pk, user_pk):
+        room: Room = Room.objects.get(id=room_pk)
+        if not room.room_type == "PB":
+            return None
+        if room.current_users.filter(id=self.scope["user"].id).exists() and room.current_users.filter(id=user_pk).exists():
+            room.current_users.remove(User.objects.get(id=user_pk))
+            room.save()
 
-    # @database_sync_to_async
-    # def add_user_to_room(self, pk):
-    #     user: User = self.scope["user"]
-    #     if not user.current_rooms.filter(pk=self.room_subscribe).exists():
-    #         user.current_rooms.add(Room.objects.get(pk=pk))
+        return RoomSerializer(room).data
+
+    @database_sync_to_async
+    def add_user_to_room(self, room_pk, user_pk, **kwargs):
+        room: Room = Room.objects.get(id=room_pk)
+        if not room.room_type == "PB":
+            return None
+        if room.current_users.filter(id=self.scope["user"].id).exists() and not room.current_users.filter(id=user_pk).exists():
+            room.current_users.add(User.objects.get(id=user_pk))
+            room.save()
+        return RoomSerializer(room).data
+        # user: User = self.scope["user"]
+        # if not user.current_rooms.filter(pk=self.room_subscribe).exists():
+        #     user.current_rooms.add(Room.objects.get(pk=pk))
 
     @database_sync_to_async
     def get_private_room(self, user_pk: int) -> Room:

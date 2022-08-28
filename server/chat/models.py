@@ -9,7 +9,8 @@ class Room(models.Model):
 
     ROOM_TYPES = [
         ('PR', 'private'),
-        ('SG', 'single')
+        ('SG', 'single'),
+        ('PB', 'public')
     ]
 
     current_users = models.ManyToManyField(
@@ -17,6 +18,9 @@ class Room(models.Model):
 
     room_type = models.CharField(max_length=10,
                                  verbose_name="Тип комнаты", choices=ROOM_TYPES)
+
+    name = models.CharField(
+        max_length=50, verbose_name='Название чата', null=True)
 
     def __str__(self) -> str:
         return f"{str(self.id)} {self.room_type}"

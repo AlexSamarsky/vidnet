@@ -8,7 +8,7 @@ python manage.py shell < initdata.py
 
 videoclips
 
-#TODO make
+#TODO make load video chunk
 
 ## Websockets
 
@@ -25,6 +25,8 @@ ws://127.0.0.1:8001/ws/chat/?token={{access_token}}
 ```
 
 #TODO make access token inside message
+
+### Private room
 
 join private room with other user
 
@@ -49,3 +51,37 @@ send message to websocket other user
 ```
 
 #TODO make messages view to access old chat message with other user
+
+### Public rooms
+
+create public room
+
+```python
+{
+    "name": "new chat",
+    "action": "action_create_public_room",
+    "request_id": 443215321
+}
+```
+
+add user to room (only exists users)
+
+```python
+{
+    "room_pk": 18,
+    "user_pk": 4,
+    "action": "action_add_user_to_room",
+    "request_id": 443215321
+}
+```
+
+remove user from room (only exists users)
+
+```python
+{
+    "room_pk": 18,
+    "user_pk": 4,
+    "action": "action_remove_user_from_room",
+    "request_id": 443215321
+}
+```
