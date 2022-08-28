@@ -191,3 +191,13 @@ frontend/node_modules/.bin/tailwindcss
 data/*
 
 server/users/migrations/*
+
+redis/*
+
+server/media/*
+
+data/*
+
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py
