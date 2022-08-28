@@ -67,7 +67,8 @@ class VCComment(models.Model):
 
 class VCReaction(models.Model):
     videoclip = models.ForeignKey(
-        Videoclip, on_delete=models.CASCADE, verbose_name="Видео")
+        Videoclip, on_delete=models.CASCADE, verbose_name="Видео",
+        related_name='reactions')
     reaction = models.ForeignKey(
         Reaction, on_delete=models.CASCADE, verbose_name="Реакция")
     count = models.IntegerField(verbose_name="Количество", default=0)
@@ -80,7 +81,26 @@ class UserReaction(models.Model):
         User, on_delete=models.CASCADE, verbose_name="Пользователь")
     reaction = models.ForeignKey(
         Reaction, on_delete=models.CASCADE, verbose_name="Реакция")
-    create_date = models.DateTimeField(verbose_name="Дата")
+    create_date = models.DateTimeField(
+        verbose_name="Дата", default=timezone.now)
+
+    class Meta:
+        unique_together = ('videoclip', 'user', 'reaction')
+
+    def register_reaction(self):
+        vc_reaction = VCReaction.objects.get_or_create(
+            videoclip=self.videoclip, reaction=self.reaction)
+        vc_reaction_object = vc_reaction[0]
+        if not vc_reaction_object.count:
+            vc_reaction_object.count = 0
+        vc_reaction_object.count += 1
+        vc_reaction_object.save()
+
+    def unregister_reaction(self):
+        vc_reaction = VCReaction.objects.get(
+            videoclip=self.videoclip, reaction=self.reaction)
+        vc_reaction.count -= 1
+        vc_reaction.save()
 
 
 class VCSubscription(models.Model):
@@ -88,16 +108,24 @@ class VCSubscription(models.Model):
         User, on_delete=models.CASCADE, verbose_name="Пользователь")
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, verbose_name="Категория")
-    create_date = models.DateTimeField(verbose_name="Дата")
+    create_date = models.DateTimeField(
+        verbose_name="Дата", default=timezone.now)
+
+    class Meta:
+        unique_together = ('user', 'category')
 
 
 class VCBan(models.Model):
     videoclip = models.ForeignKey(
         Videoclip, on_delete=models.CASCADE, verbose_name="Видео")
-    user = models.ForeignKey(
+    banned_user = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="Пользователь")
     term_date = models.DateTimeField(verbose_name="Бан до")
-    create_date = models.DateTimeField(verbose_name="Дата")
+    create_date = models.DateTimeField(
+        verbose_name="Дата", default=timezone.now)
+
+    class Meta:
+        unique_together = ('videoclip', 'banned_user')
 
 
 class VCCategory(models.Model):

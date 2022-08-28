@@ -5,7 +5,7 @@ from rest_framework import status
 
 
 class VidnetModelViewSet(ModelViewSet):
-    edit_serializer_class = None
+    write_serializer_class = None
     read_serializer_class = None
 
     permission_classes_by_action = {
@@ -17,9 +17,9 @@ class VidnetModelViewSet(ModelViewSet):
         'default': None
     }
 
-    def get_edit_serializer_class(self):
-        if hasattr(self, 'edit_serializer_class') and self.edit_serializer_class:
-            return self.edit_serializer_class
+    def get_write_serializer_class(self):
+        if hasattr(self, 'write_serializer_class') and self.write_serializer_class:
+            return self.write_serializer_class
 
         return self.serializer_class
 
@@ -34,8 +34,8 @@ class VidnetModelViewSet(ModelViewSet):
         if serializer:
             return serializer
 
-        if hasattr(self, 'edit_serializer_class') and self.edit_serializer_class and self.action in ['create', 'update', 'partial_update']:
-            return self.edit_serializer_class
+        if hasattr(self, 'write_serializer_class') and self.write_serializer_class and self.action in ['create', 'update', 'partial_update']:
+            return self.write_serializer_class
 
         if hasattr(self, 'read_serializer_class') and self.read_serializer_class and self.action in ['list', 'retrieve']:
             return self.read_serializer_class
@@ -49,7 +49,7 @@ class VidnetModelViewSet(ModelViewSet):
             return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
-        serializer_edit_object = self.get_edit_serializer_class()
+        serializer_edit_object = self.get_write_serializer_class()
         serializer_edit = serializer_edit_object(data=request.data)
         if serializer_edit.is_valid():
             obj = serializer_edit.save(**kwargs)
@@ -60,6 +60,9 @@ class VidnetModelViewSet(ModelViewSet):
             return Response(data=serializer_read.data, status=status.HTTP_201_CREATED)
         else:
             return Response(data=serializer_edit.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_create(self, serializer, **kwargs):
+        return super().perform_create(serializer)
 
     def update(self, request, *args, **kwargs):
         # super().update(request, *args, **kwargs)

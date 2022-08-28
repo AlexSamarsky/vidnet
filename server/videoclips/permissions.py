@@ -3,7 +3,7 @@ from rest_framework import permissions
 from videoclips.models import VCBan, VCCategory, Videoclip
 
 
-class AuthorPermission (permissions.BasePermission):
+class AuthorPermission (permissions.IsAuthenticatedOrReadOnly):
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
@@ -15,13 +15,16 @@ class AuthorPermission (permissions.BasePermission):
         if isinstance(obj, (Videoclip)):
             return obj.author == request.user
 
-        if isinstance(obj, (VCCategory, VCBan)) and view.action == 'destroy':
+        if isinstance(obj, (VCCategory)) and view.action == 'destroy':
+            return obj.videoclip.author == request.user
+
+        if isinstance(obj, (VCBan)):
             return obj.videoclip.author == request.user
 
         return False
 
 
-class CommentPermission (permissions.BasePermission):
+class CommentPermission (permissions.IsAuthenticatedOrReadOnly):
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:

@@ -70,6 +70,9 @@ INSTALLED_APPS = [
     'users',
     'videoclips',
     'drf_yasg',
+    'chat',
+    'channels',
+    'pure_pagination',
 ]
 
 MIDDLEWARE = [
@@ -182,6 +185,17 @@ PRODUCTION_SETTINGS = env.bool('DJANGO_PRODUCTION_SETTINGS', default=False)
 #     'JWT_AUTH_COOKIE_SAMESITE': 'None'
 # }
 
+ASGI_APPLICATION = 'vidnet.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 SIMPLE_JWT = {
     # Cookie name. Enables cookies if value is set.
     'AUTH_COOKIE': 'access_token',
@@ -226,7 +240,18 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_URL = 'auth/login/'
 
+MEDIA_ROOT = 'media/'
+MEDIA_URL = '/media/'
+
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     # 'LOGIN_URL': '/auth/login/'
+}
+
+
+PAGINATION_SETTINGS = {
+    'PAGE_RANGE_DISPLAYED': 10,
+    'MARGIN_PAGES_DISPLAYED': 2,
+
+    'SHOW_FIRST_PAGE_WHEN_INVALID': True,
 }
