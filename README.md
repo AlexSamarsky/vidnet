@@ -34,7 +34,10 @@ uvicorn --port 8001 vidnet.asgi:application
 connect to websocket
 
 ```python
-ws://127.0.0.1:8001/ws/chat/?token={{access_token}}
+ws://127.0.0.1:8001/ws/chat/
+
+header
+authorization: Bearer {{access_token}}
 ```
 
 #TODO make access token inside message
