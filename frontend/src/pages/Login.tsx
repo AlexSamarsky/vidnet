@@ -1,26 +1,39 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useCallback, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Spinner } from "react-bootstrap";
 import GoogleButton from "react-google-button";
-import { useLoginMutation } from "../app/api/authApiSlice";
-import { setCredentials, selectUser } from "../app/authSlice";
+import { useLoginMutation, UserCredentials } from "../app/api/authApiSlice";
+import { setCredentials } from "../app/authSlice";
 
 import { utilOpenGoogleLoginPage } from "../utils/authUtils";
 import styles from "./login.module.css";
 
+import { useForm } from "react-hook-form";
+
+// #TODO make react hook form
+
 function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  // const [email, setEmail] = useState<string>("");
+  // const [password, setPassword] = useState<string>("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, touchedFields },
+  } = useForm<UserCredentials>({
+    mode: "onBlur",
+  });
 
   const [login, { isLoading, error, isError, data: userData }] =
     useLoginMutation();
 
-  const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmitForm = async ({ email, password }: UserCredentials) => {
+    // console.log(email, password);
+    // e.preventDefault();
     try {
       login({ email, password })
         .unwrap()
@@ -44,56 +57,78 @@ function Login() {
         navigate("/");
       }
     } catch (err: any) {}
-  }, [error, userData]);
+  }, [error, userData, dispatch, navigate]);
 
   const openGoogleLoginPage = useCallback(() => {
     utilOpenGoogleLoginPage();
   }, []);
 
-  const handleSetUser = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setEmail(e.target.value);
-  const handleSetPwd = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setPassword(e.target.value);
-
   return (
     <>
       <div className={styles.form_login}>
-        <Form onSubmit={handleSubmit}>
+        <Form
+          // className="was-validated"
+          onSubmit={handleSubmit(handleSubmitForm)}
+        >
           <Form.Group className="mb-3">
-            {/* <Form.Label>Имя/email пользователя</Form.Label> */}
             <Form.Control
-              type="email"
-              placeholder="Введите имя пользователя"
-              onChange={handleSetUser}
-              autoFocus
-              defaultValue={email}
-            />
+              {...register("email", {
+                required: "Введите email",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Некорректный email",
+                },
+              })}
+              placeholder="Введите email"
+              className={
+                !errors?.email && touchedFields?.email ? "is-valid" : ""
+              }
+            ></Form.Control>
+            {errors?.email && (
+              <p className="invalid-feedback d-block">{errors.email.message}</p>
+            )}
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Пароль</Form.Label>
             <Form.Control
+              {...register("password", { required: "Введите пароль" })}
               type="password"
               placeholder="Введите пароль"
-              onChange={handleSetPwd}
-              defaultValue={password}
+              className={
+                !errors?.password && touchedFields?.password ? "is-valid" : ""
+              }
             />
-            {isLoading ? <p>Загрузка</p> : <></>}
+            {errors?.password && (
+              <p className="invalid-feedback d-block">
+                {errors.password.message}
+              </p>
+            )}
+          </Form.Group>
+          <div className="row">
             {isError ? (
-              <>
-                <p>{JSON.stringify(error)}</p>
-              </>
+              <div className="invalid-feedback d-block">
+                Неправильный логин/пароль
+              </div>
             ) : (
               <></>
             )}
-            {error ? <p>{JSON.stringify(error)}</p> : <></>}
-          </Form.Group>
-          <div className="row">
             <Button
               type="submit"
               className="primary"
               defaultChecked
-              disabled={isLoading}
+              disabled={isLoading || !isValid}
             >
+              {isLoading ? (
+                <Spinner
+                  as="span"
+                  animation="grow"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+              ) : (
+                <></>
+              )}
               Войти
             </Button>
           </div>

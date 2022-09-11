@@ -1,0 +1,132 @@
+@startuml vidnet
+
+hide empty methods
+
+package Chat #DDDDDD {
+    class Room {
+        + id: integer
+        room_type: choice
+        current_users: manytomany
+        name
+    }
+
+    class Message {
+        + id: integer
+        text: string
+        room
+        user
+        created_at: datetime
+    }
+
+    class UnreadMessage {
+        + id
+        room
+        user
+        last_unread_message
+    }
+}
+
+package Videoclips #DDDDDD {
+
+    class Category {
+        + id: integer
+        name: string
+    }
+
+    class Reaction {
+        + id: integer
+        name: string
+        icon: string
+    }
+
+    class Videoclip {
+        + id: integer
+        author
+        title: string
+        description: text
+        upload: path
+        categories: manytomany
+        create_date: datetime
+    }
+
+    class VCComment {
+        + id: integer
+        videoclip
+        user
+        create_date: datetime
+        comment: string
+    }
+
+    class VCReaction {
+        + id: integer
+        videoclip
+        reaction
+        count: integer
+    }
+
+    class UserReaction {
+        + id: integer
+        videoclip
+        user
+        reaction
+        create_date: datetime
+    }
+
+    class VCSubscription {
+        + id: integer
+        user
+        category
+        create_date: datetime
+    }
+
+    class VCBan {
+        + id: integer
+        videoclip
+        banned_user
+        term_date: datetime
+        create_date: datetime
+    }
+
+    class VCCategory<<asset>> {
+        videoclip
+        category
+    } 
+}
+
+skinparam class{
+    ArrowColor<<asset>> Green
+    BackgroundColor<<asset>> PowderBlue
+}
+
+package Users #DDDDDD  {
+    class User {
+        + id: integer
+        email
+        first_name
+    }
+}
+
+Chat.Room::id *-- Chat.Message::room
+Chat.Room::id *-- Chat.UnreadMessage::room
+Chat.Message::id *-- Chat.UnreadMessage::last_unread_message
+User::id *-[#Red]-* Chat.Room::current_users
+User::id *-[#Red]- Chat.Message::user
+User::id *-[#Red]- Videoclips.VCComment::user
+User::id *-[#Red]- Videoclips.Videoclip::author
+User::id *-[#Red]- Videoclips.UserReaction::user
+User::id *-[#Red]- Videoclips.VCSubscription::user
+User::id *-[#Red]- Videoclips.VCBan::banned_user
+User::id *-[#Red]- Chat.UnreadMessage::user
+Videoclips.Videoclip::id *-[#Blue]- Videoclips.VCCategory::videoclip
+Videoclips.Videoclip::id *-[#Blue]- Videoclips.VCBan::videoclip
+Videoclips.Videoclip::id *-[#Blue]- Videoclips.UserReaction::videoclip
+Videoclips.Videoclip::id *-[#Blue]- Videoclips.VCReaction::videoclip
+Videoclips.Videoclip::id *-[#Blue]- Videoclips.VCComment::videoclip
+
+Videoclips.Category::id *-- Videoclips.VCCategory::category
+Videoclips.Category::id *-- Videoclips.VCSubscription::category
+
+Videoclips.Reaction::id *-- Videoclips.VCReaction::reaction
+Videoclips.Reaction::id *-- Videoclips.UserReaction::reaction
+
+@enduml

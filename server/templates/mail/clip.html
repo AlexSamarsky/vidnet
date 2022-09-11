@@ -1,0 +1,7 @@
+{% load censor %}
+
+<div class="container border col-md-8 mb-3">
+  <h3>{{ clip.title }}</h3>
+  <p>{{ clip.description|truncatechars:100|censor }}</p>
+  <a href="{{ clip.url }}" class="btn btn-primary">Перейти</a>
+</div>

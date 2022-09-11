@@ -10,7 +10,8 @@ class Room(models.Model):
     ROOM_TYPES = [
         ('PR', 'private'),
         ('SG', 'single'),
-        ('PB', 'public')
+        ('PB', 'public'),
+        ('NT', 'notifications')
     ]
 
     current_users = models.ManyToManyField(

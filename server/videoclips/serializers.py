@@ -76,7 +76,10 @@ class VideoclipSerializer(serializers.ModelSerializer):
         return VCComment.objects.filter(videoclip=obj).count()
 
     def get_file_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.upload.url)
+        if obj.upload:
+            return self.context['request'].build_absolute_uri(obj.upload.url)
+
+        return ''
 
 
 class VideoclipEditSerializer(serializers.ModelSerializer):

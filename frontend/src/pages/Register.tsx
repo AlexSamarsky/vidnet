@@ -7,6 +7,21 @@ import { useRegisterMutation } from "../app/api/authApiSlice";
 
 import styles from "./login.module.css";
 
+// <input
+// name="email"
+// type="email"
+// ref={register}
+// />
+// <input
+// name="emailConfirmation"
+// type="email"
+// ref={register({
+//   validate: {
+//     emailEqual: value => (value === getValues().email) || 'Email confirmation error!',
+//   }
+// })}
+// />
+
 const Register = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -67,7 +82,7 @@ const Register = () => {
             {/* <Form.Label>Имя/email пользователя</Form.Label> */}
             <Form.Control
               type="email"
-              placeholder="Введите имя пользователя"
+              placeholder="Введите email"
               onChange={handleSetUser}
               autoFocus
               defaultValue={email}

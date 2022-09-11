@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 from datetime import timedelta
 import environ
@@ -73,6 +74,7 @@ INSTALLED_APPS = [
     'chat',
     'channels',
     'pure_pagination',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -91,7 +93,7 @@ ROOT_URLCONF = 'vidnet.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,6 +101,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries':{
+                'censor': 'videoclips.templatetags.censor'
+            }
         },
     },
 ]
@@ -255,3 +260,35 @@ PAGINATION_SETTINGS = {
 
     'SHOW_FIRST_PAGE_WHEN_INVALID': True,
 }
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+# CELERY_BEAT_SCHEDULE = {
+#     "sample_task": {
+#         "task": "hello",
+#         "schedule": 2.0,
+#     },
+# }
+
+
+EMAIL_HOST = env.str('DJANGO_EMAIL_HOST')
+EMAIL_PORT = env.str('DJANGO_EMAIL_PORT')
+EMAIL_HOST_USER = env.str('DJANGO_EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env.str('DJANGO_EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+SHELL_PLUS = 'ipython'
+
+IPYTHON_ARGUMENTS = [
+    '--ext', 'autoreload',
+]
+
+SHELL_PLUS_IMPORTS = [
+    'from videoclips.tasks import *',
+]

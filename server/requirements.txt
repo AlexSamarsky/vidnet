@@ -1,4 +1,5 @@
 aioredis==1.3.1
+amqp==5.1.1
 anyio==3.6.1
 appnope==0.1.3
 asgiref==3.5.2
@@ -10,12 +11,17 @@ autobahn==22.7.1
 Automat==20.2.0
 autopep8==1.6.0
 backcall==0.2.0
+billiard==3.6.4.0
+celery==5.2.7
 certifi==2022.6.15
 cffi==1.15.1
 channels==3.0.5
 channels-redis==3.4.1
 charset-normalizer==2.1.0
 click==8.1.3
+click-didyoumean==0.3.0
+click-plugins==1.1.1
+click-repl==0.2.0
 constantly==15.1.0
 coreapi==2.3.3
 coreschema==0.0.4
@@ -23,6 +29,7 @@ cryptography==37.0.4
 daphne==3.0.2
 debugpy==1.6.2
 decorator==5.1.1
+Deprecated==1.2.13
 dill==0.3.5.1
 Django==4.0.6
 django-cors-headers==3.13.0
@@ -57,6 +64,7 @@ jedi==0.18.1
 Jinja2==3.1.2
 jupyter-client==7.3.4
 jupyter-core==4.11.1
+kombu==5.2.4
 lazy-object-proxy==1.7.1
 Markdown==3.4.1
 MarkupSafe==2.1.1
@@ -92,6 +100,7 @@ python-dotenv==0.20.0
 pytz==2022.1
 PyYAML==6.0
 pyzmq==23.2.0
+redis==4.3.4
 requests==2.28.1
 ruamel.yaml==0.17.21
 ruamel.yaml.clib==0.2.6
@@ -112,6 +121,7 @@ uritemplate==4.1.1
 urllib3==1.26.11
 uvicorn==0.18.3
 uvloop==0.16.0
+vine==5.0.0
 watchfiles==0.16.1
 wcwidth==0.2.5
 websockets==10.3

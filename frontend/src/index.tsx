@@ -10,7 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import store from "./app/store";
 import { BrowserRouter } from "react-router-dom";
 
-console.log(store);
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -22,3 +22,5 @@ root.render(
     </Provider>
   </BrowserRouter>
 );
+
+serviceWorkerRegistration.register();
