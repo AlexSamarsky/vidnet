@@ -35,6 +35,7 @@ urlpatterns = [
     path(r'', include(router.urls)),
     # path(r'', include(router_add.urls)),
     path(r'', include(videoclips_router.urls)),
+    path(r'newclips', views.view_get_new_videoclips)
 ]
 
 # urlpatterns += router.urls

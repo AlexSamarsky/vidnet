@@ -1,5 +1,9 @@
-{% extends 'mail/base.html' %} {% block content %}
-<div class="container col-md-6">
+{% extends 'mail/base.html' %}
+
+
+
+{% block content %}
+<div class="container col-md-4">
   <h1>Новые видеоклипы за день</h1>
   {% for clip in clips %} {% include 'mail/clip.html' with clip=clip %} 
   {% endfor %}

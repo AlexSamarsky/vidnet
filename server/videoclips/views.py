@@ -2,27 +2,22 @@ from django.db import transaction
 from rest_framework import filters, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.db.utils import IntegrityError
-# from rest_framework.parsers import FileUploadParser
+from pure_pagination.mixins import PaginationMixin
+from rest_framework.viewsets import ViewSet
+from rest_framework.decorators import action
 
 from vidnet.paginator import VidnetPagination
-
-
-from .models import Category, UserReaction, VCBan, VCCategory, VCComment, VCSubscription, Videoclip
-
 from vidnet.viewsets import VidnetModelViewSet
 
 from .permissions import AuthorPermission, CommentPermission, IsAdminOrReadOnly
+from .models import Category, UserReaction, VCBan, VCCategory, VCComment, VCSubscription, Videoclip
 from .filters import VideoclipFilter
+from .utils import get_new_videoclips_data
 from .serializers import (CategorySerializer, UserReactionEditSerializer, UserReactionSerializer, VCBanEditSerializer, VCBanSerializer,
                           VCCategorySerializer, VCCommentEditSerializer, VCCommentSerializer, VCSubscriptionEditSerializer,
                           VCSubscriptionSerializer, VideoclipEditSerializer, VideoclipSerializer, UploadSerializer)
-
-from pure_pagination.mixins import PaginationMixin
-# from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
-from rest_framework.decorators import action
 
 
 class UploadView(ViewSet):
@@ -213,3 +208,11 @@ class VCSubscriptionView(VidnetModelViewSet):
             return Response(err, status=status.HTTP_400_BAD_REQUEST)
 
         return response
+
+
+def view_get_new_videoclips(request):
+    data = get_new_videoclips_data()
+    user_clips = data[0]['clips']
+    print(user_clips)
+    context = {'clips': user_clips}
+    return render(request, 'mail/new_clips.html', context)

@@ -1,7 +1,38 @@
-{% load censor %}
+{% load censor %} {% load users_extras %}
+{% load date_string %}
 
-<div class="container border col-md-8 mb-3">
-  <h3>{{ clip.title }}</h3>
-  <p>{{ clip.description|truncatechars:100|censor }}</p>
-  <a href="{{ clip.url }}" class="btn btn-primary">Перейти</a>
+<div class="col-md-12 mb-3 card">
+  <div class="card-body">
+    <h3 class="card-title">{{ clip.title }}</h3>
+    <p>{{ clip.description|truncatechars:100|censor }}</p>
+    <div class="d-flex justify-content-between">
+      <label class="col-sm-3 col-form-label">
+        {{ clip.comments_count }}
+        {{ clip.comments_count|ru_plural:"комментарий,комментария,комментариев" }}
+      </label>
+      <a href="{{ clip.url }}" class="stretched-link" target="_blank"
+        >Перейти</a
+      >
+    </div>
+  </div>
+  <div class="d-flex justify-content-between card-footer">
+    <div>
+      {% if clip.reactions %}
+      {{ clip.reactions.0.count }}
+      <svg
+        style="font-size: 0.5em; padding: 0; margin: 0;"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 48 48"
+        width="24"
+        height="24"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <path
+          d="m24 41.95-2.05-1.85q-5.3-4.85-8.75-8.375-3.45-3.525-5.5-6.3T4.825 20.4Q4 18.15 4 15.85q0-4.5 3.025-7.525Q10.05 5.3 14.5 5.3q2.85 0 5.275 1.35Q22.2 8 24 10.55q2.1-2.7 4.45-3.975T33.5 5.3q4.45 0 7.475 3.025Q44 11.35 44 15.85q0 2.3-.825 4.55T40.3 25.425q-2.05 2.775-5.5 6.3T26.05 40.1Z"
+        />
+      </svg>
+      {% endif %}
+    </div>
+    <div class="text-muted">{{ clip.create_date|date_as_string }}</div>
+  </div>
 </div>
