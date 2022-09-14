@@ -42,6 +42,17 @@ authorization: Bearer {{access_token}}
 
 #TODO make access token inside message
 
+### Notification room
+
+join notification room for user
+
+```python
+{
+    "action": "join_notification_room",
+    "request_id": 443215321
+}
+```
+
 ### Private room
 
 join private room with other user
@@ -101,3 +112,6 @@ remove user from room (only exists users)
     "request_id": 443215321
 }
 ```
+
+#TODO make email message like http://localhost:8000/api/v1/videoclips/newclips/
+use recommendations https://habr.com/ru/company/pechkin/blog/255819/
