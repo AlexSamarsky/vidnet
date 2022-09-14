@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import environ
+from celery.schedules import crontab
 
 from django.core.management.utils import get_random_secret_key
 
@@ -268,12 +269,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 
-# CELERY_BEAT_SCHEDULE = {
-#     "sample_task": {
-#         "task": "hello",
-#         "schedule": 2.0,
-#     },
-# }
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "get_new_videoclips",
+        "schedule": crontab(minute=0, hour=20),
+    },
+}
 
 
 EMAIL_HOST = env.str('DJANGO_EMAIL_HOST')
