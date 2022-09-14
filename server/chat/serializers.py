@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
 # from users.models import User
-from .models import Message, Room
+from .models import Message, Room, UnreadMessage
 
-from users.serializers import UserSerializer
+from users.serializers import UserProfileSerializer, UserSerializer
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -72,3 +72,15 @@ class MessageChatSerializer(serializers.ModelSerializer):
 
     def get_created_at_formatted(self, obj: Message):
         return obj.created_at.strftime("%d-%m-%Y %H:%M:%S")
+
+
+class UnreadMessageChatSerializer(serializers.ModelSerializer):
+
+    user = UserProfileSerializer()
+    last_unread_message = MessageChatSerializer()
+    # room = RoomSerializer()
+
+    class Meta:
+        model = UnreadMessage
+        fields = "__all__"
+        depth = 1

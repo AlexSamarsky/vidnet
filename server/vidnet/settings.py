@@ -292,3 +292,6 @@ IPYTHON_ARGUMENTS = [
 SHELL_PLUS_IMPORTS = [
     'from videoclips.tasks import *',
 ]
+
+VONAGE_SMS_API_KEY = env.str('VONAGE_SMS_API_KEY')
+VONAGE_SMS_SEKRET_KEY = env.str('VONAGE_SMS_SECRET_KEY')

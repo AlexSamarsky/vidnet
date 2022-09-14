@@ -9,6 +9,7 @@ class User(AbstractUser):
     username = None
 
     email = models.EmailField(unique=True, db_index=True)
+    phone_number = models.CharField(max_length=20, blank=True)
     secret_key = models.CharField(
         max_length=255, default=get_random_secret_key)
 
